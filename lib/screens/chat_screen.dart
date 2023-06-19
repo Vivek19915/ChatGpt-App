@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../widgets/chat_widget.dart';
+
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
 
@@ -59,14 +61,14 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: [
               ListView.builder(
-                  itemCount: 6,
+                  itemCount: chatMessages.length,
                   itemBuilder: (context, index) {
-                    return "hello".text.white.make();
-                    // return ChatWidget(
-                    //   chatIndex: int.parse(
-                    //       chatMessages[index]["chatIndex"].toString()),
-                    //   msg: chatMessages[index]["msg"].toString(),
-                    // );
+                    // return "hello".text.white.make().box.padding(EdgeInsets.symmetric(horizontal: 8)).make();
+                    return ChatWidget(
+                      chatIndex: int.parse(
+                          chatMessages[index]["chatIndex"].toString()),
+                      msg: chatMessages[index]["msg"].toString(),
+                    );
                   }).flexible(),
 
               if (_isTyping == true) ...[
