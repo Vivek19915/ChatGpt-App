@@ -1,0 +1,23 @@
+class ModelsModel {
+
+  //all these field are added/created using postman by get
+  final String id;
+  final int created;
+  final String root;
+
+  ModelsModel({
+    required this.id,
+    required this.root,
+    required this.created,
+  });
+
+  factory ModelsModel.fromJson(Map<String,dynamic> json) => ModelsModel(
+      id: json["id"],
+      root: json["root"],
+      created: json["created"],
+  );
+
+  static List<ModelsModel> modelsFromSnapshot (List modelsFromSnapshot){
+    return modelsFromSnapshot.map((data) => ModelsModel.fromJson(data)).toList();
+  }
+}
