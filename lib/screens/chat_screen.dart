@@ -2,10 +2,12 @@ import 'dart:developer';
 
 import 'package:chatgpt_app/constants/api_constants.dart';
 import 'package:chatgpt_app/constants/constants.dart';
+import 'package:chatgpt_app/providers/models_provider.dart';
 import 'package:chatgpt_app/services/api_services.dart';
 import 'package:chatgpt_app/services/assets_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../services/services.dart';
@@ -24,7 +26,20 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController textEditingController = TextEditingController();
 
   @override
+  void initState() {
+    textEditingController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final modelsProvider = Provider.of<ModelsProvider>(context);
     return Scaffold(
       //appbar makking op 🔥🔥
         appBar: AppBar(
@@ -83,7 +98,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       onPressed: () async {
                         try{
                           //when we click button we get all the models same as we get during postman
-                          await ApiService.getModels();
+                          print("request has been sent");
+                          await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel);
                         }catch(error){print("Error:- $error");}
                         },
                     )

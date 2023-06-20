@@ -36,4 +36,39 @@ class ApiService {
       rethrow;
     }
   }
+
+
+
+  //Send Message
+  static Future<void> sendMessage({required String message , required String modelId}) async {
+    //try catch block
+    try{
+      //get request to get all the models from open ai Api
+      var response = await http.post(
+        Uri.parse("$BASE_URL/completions"),
+        headers: {
+          'Authorization': 'Bearer $API',
+          'Content-Type': 'application/json'
+        },
+        body: jsonEncode({
+          "model": modelId,
+          "prompt": message,
+          "max_tokens": 300,
+        },),
+      );
+
+      Map jsonResponse = jsonDecode(response.body);
+      if(jsonResponse['error']!=null){
+        //means error occured
+        // print("jsonResponse Error:- $jsonResponse['error']['message']");
+        throw HttpException(jsonResponse['error']['message']);
+      }
+      if (jsonResponse["choices"].length > 0) {
+        print("jsonResponse[choices]text ${jsonResponse["choices"][0]["text"]}");
+      }
+    } catch(error){
+      print("error11:- $error");
+      rethrow;
+    }
+  }
 }
