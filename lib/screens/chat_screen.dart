@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:chatgpt_app/constants/api_constants.dart';
 import 'package:chatgpt_app/constants/constants.dart';
+import 'package:chatgpt_app/services/api_services.dart';
 import 'package:chatgpt_app/services/assets_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -78,7 +80,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     ).expand(),
                     IconButton(
                       icon: Icon(Icons.send, color: Colors.white,),
-                      onPressed: () {},
+                      onPressed: () async {
+                        try{
+                          //when we click button we get all the models same as we get during postman
+                          await ApiService.getModels();
+                        }catch(error){print("Error:- $error");}
+                        },
                     )
                   ],
                 ).box.padding(EdgeInsets.all(8)).make(),
