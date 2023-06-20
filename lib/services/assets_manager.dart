@@ -1,4 +1,3 @@
-
 // Images
   const userIMage = "assets/images/person.png";
   const botIMage = "assets/images/chat_logo.png";
