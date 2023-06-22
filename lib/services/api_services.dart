@@ -56,7 +56,6 @@ class ApiService {
           // message -- messageby user
           "model": modelId,
           "messages": [{"role": "user", "content": message}],
-          "temperature": 0.7
         },),
       );
 
@@ -72,7 +71,7 @@ class ApiService {
 
       if (jsonResponse["choices"].length > 0) {
         //according to response of gpt-3.5-turbo
-        // print("jsonResponse[choices]text ${jsonResponse["choices"][0]["message"]["content"]}");
+        print("jsonResponse[choices]text ${jsonResponse["choices"][0]["message"]["content"]}");
 
         chatlist = List.generate(jsonResponse["choices"].length, (index) =>
             ChatModel(msg: jsonResponse["choices"][index]["message"]["content"],

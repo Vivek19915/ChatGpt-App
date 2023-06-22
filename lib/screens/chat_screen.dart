@@ -24,17 +24,23 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   bool _isTyping = false;
-  TextEditingController textEditingController = TextEditingController();
+  late TextEditingController textEditingController = TextEditingController();
+  late FocusNode  focusNode;
+  late ScrollController _listScrollController;
 
   @override
   void initState() {
     textEditingController = TextEditingController();
+    focusNode = FocusNode();
+    _listScrollController = ScrollController();
     super.initState();
   }
 
   @override
   void dispose() {
     textEditingController.dispose();
+    focusNode.dispose();
+    _listScrollController.dispose();
     super.dispose();
   }
 
@@ -64,6 +70,7 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: [
               ListView.builder(
+                  controller: _listScrollController,
                   itemCount: chatlist.length,
                   itemBuilder: (context, index) {
                     // return "hello".text.white.make().box.padding(EdgeInsets.symmetric(horizontal: 8)).make();
@@ -84,6 +91,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Row(
                   children: [
                     TextField(
+                      focusNode : focusNode,
                       style: TextStyle(color: Colors.white),
                       //--> jo type karege us text ki style change hogi
                       controller: textEditingController,
@@ -118,12 +126,27 @@ Future<void> sendMessageFCT ({required ModelsProvider modelsProvider}) async {
     setState(() {
       _isTyping = true;
       chatlist.add(ChatModel(msg: textEditingController.text, chatIndex: 0));   //0 as we are user
+
+      textEditingController.clear();   //after tying wriitrn msg in textfild will automatically erased
+      focusNode.unfocus();
     });
     //and all the response that we got from api sendmessage will store in this list
     chatlist.addAll(await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel));
     setState(() {});
   }
   catch(error){print("Error:- $error");}
-  finally{setState(() {_isTyping = false;});}
+  finally{setState(() {
+    _isTyping = false;
+  scrollListToEnd();
+  });}
+}
+
+
+void scrollListToEnd(){
+    _listScrollController.animateTo(
+        _listScrollController.position.maxScrollExtent,
+        duration: Duration(seconds: 2),
+        curve: Curves.easeOut,
+    );
 }
 }
