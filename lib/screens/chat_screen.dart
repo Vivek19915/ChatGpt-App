@@ -115,9 +115,12 @@ class _ChatScreenState extends State<ChatScreen> {
 Future<void> sendMessageFCT ({required ModelsProvider modelsProvider}) async {
   try{
     //when we click button we get all the models same as we get during postman
-    setState(() {_isTyping = true;});
+    setState(() {
+      _isTyping = true;
+      chatlist.add(ChatModel(msg: textEditingController.text, chatIndex: 0));   //0 as we are user
+    });
     //and all the response that we got from api sendmessage will store in this list
-    chatlist = await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel);
+    chatlist.addAll(await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel));
     setState(() {});
   }
   catch(error){print("Error:- $error");}
