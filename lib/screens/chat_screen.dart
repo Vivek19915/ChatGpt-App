@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:chatgpt_app/constants/api_constants.dart';
 import 'package:chatgpt_app/constants/constants.dart';
+import 'package:chatgpt_app/providers/chats_provider.dart';
 import 'package:chatgpt_app/providers/models_provider.dart';
 import 'package:chatgpt_app/services/api_services.dart';
 import 'package:chatgpt_app/services/assets_manager.dart';
@@ -44,11 +45,14 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
-  List<ChatModel> chatlist = [];   ///we defining it outside of build because when we buil it previous chatlist remain preserve
+  // List<ChatModel> chatlist = [];   ///we defining it outside of build because when we buil it previous chatlist remain preserve
 
   @override
   Widget build(BuildContext context) {
+
     final modelsProvider = Provider.of<ModelsProvider>(context);
+    final chatProvider = Provider.of<ChatProvider>(context);
+
     return Scaffold(
       //appbar makking op 🔥🔥
         appBar: AppBar(
@@ -71,12 +75,12 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               ListView.builder(
                   controller: _listScrollController,
-                  itemCount: chatlist.length,
+                  itemCount: chatProvider.getChatList.length,//chatlist.length,
                   itemBuilder: (context, index) {
                     // return "hello".text.white.make().box.padding(EdgeInsets.symmetric(horizontal: 8)).make();
                     return ChatWidget(
-                      chatIndex: chatlist[index].chatIndex,
-                      msg: chatlist[index].msg,
+                      chatIndex: chatProvider.getChatList[index].chatIndex,
+                      msg: chatProvider.getChatList[index].msg,
                     );
                   }).flexible(),
 
@@ -97,7 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       controller: textEditingController,
                       onSubmitted: (value) async{
                         // value will store the msg
-                      await sendMessageFCT(modelsProvider: modelsProvider);
+                      await sendMessageFCT(modelsProvider: modelsProvider,chatProvider: chatProvider);
                       },
                       decoration: InputDecoration.collapsed(
                           hintText: "How can I help you",
@@ -106,7 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ).expand(),
                     IconButton(
                       icon: Icon(Icons.send, color: Colors.white,),
-                      onPressed: () async {await sendMessageFCT(modelsProvider: modelsProvider);},
+                      onPressed: () async {await sendMessageFCT(modelsProvider: modelsProvider,chatProvider: chatProvider);},
                     )
                   ],
                 ).box.padding(EdgeInsets.all(8)).make(),
@@ -120,18 +124,29 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
   //function send message
-Future<void> sendMessageFCT ({required ModelsProvider modelsProvider}) async {
-  try{
+Future<void> sendMessageFCT ({required ModelsProvider modelsProvider,required ChatProvider chatProvider}) async {
+    if(textEditingController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: TextWidget(label: "Please type a message"),
+        backgroundColor: Colors.red,
+        ),
+
+      );
+      return;
+    }
+    try{
+      String msg = textEditingController.text;
     //when we click button we get all the models same as we get during postman
     setState(() {
       _isTyping = true;
-      chatlist.add(ChatModel(msg: textEditingController.text, chatIndex: 0));   //0 as we are user
-
+      // chatlist.add(ChatModel(msg: textEditingController.text, chatIndex: 0));   //0 as we are user
+      chatProvider.addUserMessage(msg: msg);
       textEditingController.clear();   //after tying wriitrn msg in textfild will automatically erased
       focusNode.unfocus();
     });
     //and all the response that we got from api sendmessage will store in this list
-    chatlist.addAll(await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel));
+     await chatProvider.sendMessageAndGetAnswers(msg: msg, chosenModelId: modelsProvider.getCurrentModel);
+    // chatlist.addAll(await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel));
     setState(() {});
   }
   catch(error){print("Error:- $error");}
