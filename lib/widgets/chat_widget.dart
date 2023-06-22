@@ -1,3 +1,4 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:chatgpt_app/widgets/text_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,17 @@ Widget ChatWidget({String? msg , chatIndex}){
         children: [
           Image.asset(chatIndex==0 ? userIMage:botIMage,width: 30,),
           5.widthBox,
-          TextWidget(label: msg).box.make().expand(),
+          chatIndex==0 ? TextWidget(label: msg).box.make().expand()
+              : DefaultTextStyle(
+                style: TextStyle(color: Colors.white,fontWeight: FontWeight.w500,fontSize: 16),
+                child: AnimatedTextKit(
+                  isRepeatingAnimation: false,
+                    repeatForever: false,
+                    displayFullTextOnTap: true,
+                    totalRepeatCount: 1,
+                    animatedTexts: [TyperAnimatedText(msg!.trim())],
+          ).expand(),
+              ),
 
           chatIndex==0 ? SizedBox.shrink()
               : Row(
