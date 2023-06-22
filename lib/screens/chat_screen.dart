@@ -10,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../models/chat_models.dart';
 import '../services/services.dart';
 import '../widgets/chat_widget.dart';
 import '../widgets/text_widget.dart';
@@ -22,7 +23,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final bool _isTyping = true;
+  bool _isTyping = false;
   TextEditingController textEditingController = TextEditingController();
 
   @override
@@ -36,6 +37,8 @@ class _ChatScreenState extends State<ChatScreen> {
     textEditingController.dispose();
     super.dispose();
   }
+
+  List<ChatModel> chatlist = [];   ///we defining it outside of build because when we buil it previous chatlist remain preserve
 
   @override
   Widget build(BuildContext context) {
@@ -61,13 +64,12 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             children: [
               ListView.builder(
-                  itemCount: chatMessages.length,
+                  itemCount: chatlist.length,
                   itemBuilder: (context, index) {
                     // return "hello".text.white.make().box.padding(EdgeInsets.symmetric(horizontal: 8)).make();
                     return ChatWidget(
-                      chatIndex: int.parse(
-                          chatMessages[index]["chatIndex"].toString()),
-                      msg: chatMessages[index]["msg"].toString(),
+                      chatIndex: chatlist[index].chatIndex,
+                      msg: chatlist[index].msg,
                     );
                   }).flexible(),
 
@@ -85,8 +87,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       style: TextStyle(color: Colors.white),
                       //--> jo type karege us text ki style change hogi
                       controller: textEditingController,
-                      onSubmitted: (value) {
+                      onSubmitted: (value) async{
                         // value will store the msg
+                      await sendMessageFCT(modelsProvider: modelsProvider);
                       },
                       decoration: InputDecoration.collapsed(
                           hintText: "How can I help you",
@@ -95,13 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ).expand(),
                     IconButton(
                       icon: Icon(Icons.send, color: Colors.white,),
-                      onPressed: () async {
-                        try{
-                          //when we click button we get all the models same as we get during postman
-                          print("request has been sent");
-                          await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel);
-                        }catch(error){print("Error:- $error");}
-                        },
+                      onPressed: () async {await sendMessageFCT(modelsProvider: modelsProvider);},
                     )
                   ],
                 ).box.padding(EdgeInsets.all(8)).make(),
@@ -110,4 +107,20 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ));
   }
+
+
+
+
+  //function send message
+Future<void> sendMessageFCT ({required ModelsProvider modelsProvider}) async {
+  try{
+    //when we click button we get all the models same as we get during postman
+    setState(() {_isTyping = true;});
+    //and all the response that we got from api sendmessage will store in this list
+    chatlist = await ApiService.sendMessage(message: textEditingController.text, modelId: modelsProvider.getCurrentModel);
+    setState(() {});
+  }
+  catch(error){print("Error:- $error");}
+  finally{setState(() {_isTyping = false;});}
+}
 }

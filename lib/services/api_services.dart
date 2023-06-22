@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:chatgpt_app/constants/api_constants.dart';
+import 'package:chatgpt_app/models/chat_models.dart';
 import 'package:chatgpt_app/models/models_model.dart';
 import 'package:http/http.dart' as http;
 
@@ -40,20 +41,22 @@ class ApiService {
 
 
   //Send Message
-  static Future<void> sendMessage({required String message , required String modelId}) async {
+  static Future<List<ChatModel>> sendMessage({required String message , required String modelId}) async {
     //try catch block
     try{
       //get request to get all the models from open ai Api
       var response = await http.post(
-        Uri.parse("$BASE_URL/completions"),
+        Uri.parse("$BASE_URL/chat/completions"),
         headers: {
           'Authorization': 'Bearer $API',
           'Content-Type': 'application/json'
         },
         body: jsonEncode({
+          //here modelID model chosen by user
+          // message -- messageby user
           "model": modelId,
-          "prompt": message,
-          "max_tokens": 300,
+          "messages": [{"role": "user", "content": message}],
+          "temperature": 0.7
         },),
       );
 
@@ -63,9 +66,20 @@ class ApiService {
         // print("jsonResponse Error:- $jsonResponse['error']['message']");
         throw HttpException(jsonResponse['error']['message']);
       }
+
+      // creating List<ChatModel> since function return this type of data
+      List<ChatModel> chatlist = [];
+
       if (jsonResponse["choices"].length > 0) {
-        print("jsonResponse[choices]text ${jsonResponse["choices"][0]["text"]}");
+        //according to response of gpt-3.5-turbo
+        // print("jsonResponse[choices]text ${jsonResponse["choices"][0]["message"]["content"]}");
+
+        chatlist = List.generate(jsonResponse["choices"].length, (index) =>
+            ChatModel(msg: jsonResponse["choices"][index]["message"]["content"],
+                chatIndex: 1,         //as it is for the user
+            ));
       }
+      return chatlist;
     } catch(error){
       print("error11:- $error");
       rethrow;
